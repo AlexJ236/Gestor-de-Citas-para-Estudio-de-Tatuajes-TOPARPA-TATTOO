@@ -1,0 +1,28 @@
+# Archivos y carpetas comunes a ignorar
+.DS_Store
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+node_modules/
+dist/
+build/
+coverage/
+*.env
+.env.*
+!.env.example
+
+# Específico del Frontend (si la build va a otro lado o hay más)
+frontend/dist
+frontend/node_modules
+frontend/.env
+frontend/.env.*
+!frontend/.env.example
+
+# Específico del Backend
+backend/node_modules
+backend/.env
+backend/.env.*
+!backend/.env.example
+
+# Archivos de VS Code (opcional, pero a menudo útil)
+.vscode/
