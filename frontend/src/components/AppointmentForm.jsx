@@ -1,4 +1,4 @@
-import React, { useState, useEffect, memo, useCallback } from 'react';
+import React, { useState, useEffect, memo, useCallback, useMemo } from 'react';
 import PropTypes from 'prop-types';
 import DatePicker, { registerLocale } from 'react-datepicker';
 import es from 'date-fns/locale/es';
@@ -6,14 +6,14 @@ import { parseISO, getMinutes, getHours, setHours, setMinutes, isPast, isToday, 
 import 'react-datepicker/dist/react-datepicker.css';
 import CurrencyInput from 'react-currency-input-field';
 import { getAllAppointments } from '../services/appointmentService';
+import { getAllArtists } from '../services/artistService';
 import { toast } from 'react-toastify';
 
 registerLocale('es', es);
 
-// Helper para parsear el valor del CurrencyInput a un número entero (o null)
+// Helper para parsear moneda a entero
 const parseCurrencyToInt = (valueString) => {
   if (!valueString) return null;
-  // Quita todo excepto los dígitos (incluyendo puntos y comas de formato)
   const digitsOnly = valueString.replace(/\D/g, '');
   if (!digitsOnly) return null;
   const parsed = parseInt(digitsOnly, 10);
@@ -24,19 +24,22 @@ function AppointmentForm({
   initialData = {}, onSubmit, isSaving = false, submitButtonText = 'Guardar',
   onCancel, clients = [], isLoadingClients = false
 }) {
+  // Estados del formulario
   const [clientId, setClientId] = useState('');
   const [selectedDateTime, setSelectedDateTime] = useState(null);
   const [durationMinutes, setDurationMinutes] = useState('60');
   const [description, setDescription] = useState('');
-  const [artist, setArtist] = useState('');
-  // Mantener estado string para los inputs de moneda
+  const [selectedArtistId, setSelectedArtistId] = useState('');
   const [totalPriceString, setTotalPriceString] = useState();
   const [amountPaidString, setAmountPaidString] = useState();
-
   const [paymentStatus, setPaymentStatus] = useState('pending');
   const [status, setStatus] = useState('scheduled');
-  const [existingAppointments, setExistingAppointments] = useState([]);
-  const [isLoadingTimes, setIsLoadingTimes] = useState(false);
+
+  // Estados de carga y datos auxiliares
+  const [existingAppointments, setExistingAppointments] = useState([]); // Citas para verificar conflictos
+  const [isLoadingTimes, setIsLoadingTimes] = useState(false); // Cargando horarios ocupados
+  const [artists, setArtists] = useState([]); // Lista de artistas
+  const [isLoadingArtists, setIsLoadingArtists] = useState(true); // Cargando artistas
 
   // Efecto para poblar el formulario con datos iniciales o resetearlo
   useEffect(() => {
@@ -46,114 +49,140 @@ function AppointmentForm({
     setSelectedDateTime(initialDate);
     setDurationMinutes(initialData.duration_minutes?.toString() || '60');
     setDescription(initialData.description || '');
-    setArtist(initialData.artist || '');
-    // Convertir número a string para el input, manejar null/undefined
+    setSelectedArtistId(initialData.artist_id || '');
     setTotalPriceString(initialData.total_price != null ? String(initialData.total_price) : undefined);
     setAmountPaidString(initialData.amount_paid != null ? String(initialData.amount_paid) : undefined);
     setPaymentStatus(initialData.payment_status || 'pending');
     setStatus(initialData.status || 'scheduled');
-    // Limpiar citas existentes al cambiar el initialData (para que se recarguen)
     setExistingAppointments([]);
   }, [initialData]); // Usar initialData como dependencia
 
-  // Efecto para cargar citas existentes del día seleccionado
+  // Efecto para cargar la lista de artistas -->
   useEffect(() => {
-    if (!selectedDateTime || !isValid(selectedDateTime)) {
+    let isMounted = true;
+    const fetchArtists = async () => {
+        setIsLoadingArtists(true);
+        try {
+            const data = await getAllArtists(); // Llamar al nuevo servicio
+            if (isMounted) {
+                setArtists(Array.isArray(data) ? data : []);
+            }
+        } catch (error) {
+             // El servicio ya muestra toast si no es error de autenticación
+            if (isMounted) setArtists([]); // Dejar lista vacía si hay error
+            console.error("Error cargando artistas en formulario:", error);
+        } finally {
+            if (isMounted) setIsLoadingArtists(false);
+        }
+    };
+    fetchArtists();
+    return () => { isMounted = false; };
+  }, []); // Solo se ejecuta al montar el componente
+
+  // Efecto para cargar citas existentes del día y artista seleccionado (para conflictos)
+  useEffect(() => {
+    // No cargar si no hay fecha válida o artista seleccionado
+    if (!selectedDateTime || !isValid(selectedDateTime) || !selectedArtistId) {
       setExistingAppointments([]);
       return;
     }
+
     let isMounted = true;
-    const fetchAppointmentsForDate = async () => {
+    const fetchAppointmentsForDateTimeArtist = async () => {
       setIsLoadingTimes(true);
       if(isMounted) setExistingAppointments([]); // Limpiar antes de cargar
-      const targetDateStr = startOfDay(selectedDateTime).toISOString().split('T')[0]; // Formato YYYY-MM-DD
+
+      const targetDate = startOfDay(selectedDateTime); // Fecha seleccionada
 
       try {
-        const allAppointments = await getAllAppointments(); // Considerar pasar { date: targetDateStr } si la API soporta
+        // Como getAllAppointments trae todo, filtramos aquí:
+        const allAppointments = await getAllAppointments();
         if (isMounted) {
-          const appointmentsForDay = allAppointments.filter(appt => {
-            if (initialData?.id && appt.id === initialData.id) return false; // Excluir la cita actual al editar
+          const appointmentsForDayAndArtist = allAppointments.filter(appt => {
+            // Excluir la cita actual si estamos editando
+            if (initialData?.id && appt.id === initialData.id) return false;
+            // Excluir citas canceladas
+            if (appt.status === 'canceled') return false;
+            // Verificar si es del mismo artista
+            if (appt.artist_id !== parseInt(selectedArtistId, 10)) return false;
+            // Verificar si es del mismo día
             try {
               const d = parseISO(appt.appointment_time);
-              return isValid(d) && startOfDay(d).toISOString().split('T')[0] === targetDateStr;
+              return isValid(d) && startOfDay(d).getTime() === targetDate.getTime();
             } catch { return false; }
           });
-          setExistingAppointments(appointmentsForDay);
+          setExistingAppointments(appointmentsForDayAndArtist);
         }
       } catch (error) {
         if (isMounted) toast.error('Error cargando horarios disponibles.');
-        console.error("Error fetching appointments for date:", error);
+        console.error("Error fetching appointments for date/artist check:", error);
       } finally {
         if (isMounted) setIsLoadingTimes(false);
       }
     };
-    fetchAppointmentsForDate();
+
+    fetchAppointmentsForDateTimeArtist();
     return () => { isMounted = false; };
-  }, [selectedDateTime ? startOfDay(selectedDateTime).toISOString() : null, initialData?.id]);
+  // Depender de la fecha (solo día) y del artista seleccionado
+  }, [selectedDateTime ? startOfDay(selectedDateTime).toISOString() : null, selectedArtistId, initialData?.id]);
 
   // Callback para filtrar tiempos en DatePicker
   const filterTime = useCallback((time) => {
-    if (!selectedDateTime || !isValid(selectedDateTime)) return true; // Permitir si fecha no válida aún
-    if (isLoadingTimes) return false; // No permitir selección mientras carga
+    if (!selectedDateTime || !isValid(selectedDateTime) || !selectedArtistId) return true; // Permitir si fecha/artista no válidos aún
+    if (isLoadingTimes) return false; // No permitir selección mientras carga conflictos
 
     const proposedStartTime = setMinutes(setHours(startOfDay(selectedDateTime), getHours(time)), getMinutes(time));
     if (!isValid(proposedStartTime)) return false;
 
-    const proposedEndTime = new Date(proposedStartTime.getTime() + (parseInt(durationMinutes, 10) || 60) * 60000);
+    const currentDuration = parseInt(durationMinutes, 10) || 60;
+    const proposedEndTime = new Date(proposedStartTime.getTime() + currentDuration * 60000);
     if (!isValid(proposedEndTime)) return false;
 
-    // Verifica si el slot propuesto se solapa con alguna cita existente
+    // Verifica si el slot propuesto se solapa con alguna cita existente PARA ESE ARTISTA
     const isOccupied = existingAppointments.some(appt => {
-      try {
-        const existingStart = parseISO(appt.appointment_time);
-        if (!isValid(existingStart)) return false;
-        const existingDuration = appt.duration_minutes || 60;
-        const existingEnd = new Date(existingStart.getTime() + existingDuration * 60000);
-        if (!isValid(existingEnd)) return false;
+       if (!appt.appointment_time || !appt.duration_minutes) return false;
+       try {
+           const existingStart = parseISO(appt.appointment_time);
+           if (!isValid(existingStart)) return false;
+           const existingDuration = appt.duration_minutes;
+           const existingEnd = new Date(existingStart.getTime() + existingDuration * 60000);
+           if (!isValid(existingEnd)) return false;
 
-        // Hay solapamiento si:
-        // (PropStart < ExistEnd) Y (PropEnd > ExistStart)
-        return proposedStartTime < existingEnd && proposedEndTime > existingStart;
-
-      } catch { return false; }
+           // Lógica de solapamiento: (InicioProp < FinExist) Y (FinProp > InicioExist)
+           return proposedStartTime < existingEnd && proposedEndTime > existingStart;
+       } catch {
+           console.error("Error parsing existing appointment time during filter:", appt);
+           return false; // Ignorar cita existente si no se puede parsear
+       }
     });
-    return !isOccupied;
-  }, [selectedDateTime, existingAppointments, isLoadingTimes, durationMinutes]);
 
-  // Handlers simples
+    return !isOccupied; // Permitir si NO está ocupado
+  }, [selectedDateTime, existingAppointments, isLoadingTimes, durationMinutes, selectedArtistId]);
+
+  // Handlers de cambio
   const handleClientChange = (e) => setClientId(e.target.value);
-  const handleDurationChange = (e) => {
-      const newDuration = e.target.value || '60';
-      setDurationMinutes(newDuration);
-      // Podríamos re-evaluar el tiempo seleccionado si la duración cambia y ahora choca
-      // Pero por simplicidad, dejamos que el usuario re-seleccione si es necesario.
-  };
-  const handleArtistChange = (e) => setArtist(e.target.value);
+  const handleDurationChange = (e) => setDurationMinutes(e.target.value || '60');
+  const handleArtistChange = (e) => setSelectedArtistId(e.target.value); // <-- NUEVO
   const handleDateTimeChange = (date) => setSelectedDateTime(date);
   const handlePaymentStatusChange = (e) => setPaymentStatus(e.target.value);
   const handleStatusChange = (e) => setStatus(e.target.value);
   const handleDescriptionChange = (e) => setDescription(e.target.value);
-
-  // Handlers para CurrencyInput (mantienen el valor como string)
   const handleTotalPriceStringChange = (value) => setTotalPriceString(value);
   const handleAmountPaidStringChange = (value) => setAmountPaidString(value);
 
-  // Handler para el submit del formulario
+  // Handler para el submit
   const handleInternalSubmit = (event) => {
     event.preventDefault();
 
-    // Validaciones básicas
+    // Validaciones
     if (!clientId) { toast.error('Selecciona un cliente.'); return; }
+    if (!selectedArtistId) { toast.error('Selecciona un artista.'); return; } // <-- NUEVO
     if (!selectedDateTime || !isValid(selectedDateTime)) { toast.error('Selecciona una fecha y hora válidas.'); return; }
-    // Verificar si la hora seleccionada sigue siendo válida después de posibles cambios
-    if (!filterTime(selectedDateTime)) { toast.error('La hora seleccionada está ocupada o no es válida con la duración actual.'); return; }
-    if (isPast(selectedDateTime) && !isToday(selectedDateTime)) { toast.error('No puedes agendar citas en el pasado.'); return; }
+    if (!filterTime(selectedDateTime)) { toast.error('La hora seleccionada está ocupada para este artista o no es válida con la duración actual.'); return; }
 
-    // Parsear valores de moneda usando el helper
     const numericTotalPrice = parseCurrencyToInt(totalPriceString);
-    const numericAmountPaid = parseCurrencyToInt(amountPaidString) ?? 0; // Default a 0 si está vacío/inválido
+    const numericAmountPaid = parseCurrencyToInt(amountPaidString) ?? 0;
 
-    // Validar que el monto pagado no exceda el precio total
     if (numericTotalPrice !== null && numericAmountPaid > numericTotalPrice) {
       toast.error('El monto pagado no puede ser mayor al precio total.');
       return;
@@ -162,39 +191,56 @@ function AppointmentForm({
     // Preparar datos para enviar
     const appointmentData = {
       client_id: parseInt(clientId, 10),
-      appointment_time: selectedDateTime.toISOString(), // Formato estándar ISO 8601
+      appointment_time: selectedDateTime.toISOString(),
       duration_minutes: parseInt(durationMinutes, 10) || 60,
       description: description.trim(),
-      artist: artist.trim(),
-      total_price: numericTotalPrice, // Valor entero o null
-      amount_paid: numericAmountPaid, // Valor entero (nunca null, default 0)
+      artist_id: parseInt(selectedArtistId, 10),
+      total_price: numericTotalPrice,
+      amount_paid: numericAmountPaid,
       payment_status: paymentStatus,
       status: status,
     };
-
-    // Llamar al onSubmit prop
     onSubmit(appointmentData);
   };
 
-  // Función para className de DatePicker
+  // Clase para días pasados en DatePicker
   const getDayClassName = useCallback((date) => {
     if (isPast(date) && !isToday(date)) { return 'past-day'; }
     return '';
   }, []);
 
-  // Deshabilitar formulario mientras guarda, carga clientes o verifica horarios
-  const formDisabled = isSaving || isLoadingClients || isLoadingTimes;
+  // Deshabilitar formulario mientras guarda o carga datos esenciales
+  const formDisabled = isSaving || isLoadingClients || isLoadingArtists || isLoadingTimes;
 
   return (
     <form onSubmit={handleInternalSubmit} className="w-full sm:max-w-lg sm:mx-auto bg-surface p-4 sm:p-6 rounded-lg shadow-lg space-y-4 border border-border-color">
-      {/* Cliente */}
+      {/* Cliente Select */}
       <div>
         <label htmlFor="client" className="block text-sm font-medium text-text-secondary mb-1">Cliente:</label>
-        <select id="client" value={clientId} onChange={handleClientChange} required className="w-full" disabled={formDisabled || isLoadingClients} >
+        <select id="client" value={clientId} onChange={handleClientChange} required className="w-full" disabled={isSaving || isLoadingClients} >
           <option value="">-- {isLoadingClients ? 'Cargando clientes...' : 'Selecciona un Cliente'} --</option>
-          {Array.isArray(clients) && clients.map(client => (<option key={client.id} value={client.id}>{client.name} ({client.email || 'Sin email'})</option>))}
+          {clients.map(client => (<option key={client.id} value={client.id}>{client.name} ({client.email || 'Sin email'})</option>))}
         </select>
         {isLoadingClients && <span className="text-xs text-amber-400 ml-2 animate-pulse">Cargando...</span>}
+      </div>
+
+      {/* Artista Select */}
+      <div>
+          <label htmlFor="artist" className="block text-sm font-medium text-text-secondary mb-1">Artista Asignado:</label>
+          <select
+            id="artist"
+            value={selectedArtistId}
+            onChange={handleArtistChange}
+            className="w-full"
+            disabled={isSaving || isLoadingArtists}
+            required
+          >
+            <option value="">-- {isLoadingArtists ? 'Cargando artistas...' : 'Selecciona un Artista'} --</option>
+            {artists.map(art => (
+              <option key={art.id} value={art.id}>{art.name}</option>
+            ))}
+          </select>
+          {isLoadingArtists && <span className="text-xs text-amber-400 ml-2 animate-pulse">Cargando...</span>}
       </div>
 
       {/* Fecha y Hora */}
@@ -204,25 +250,18 @@ function AppointmentForm({
           id="appointmentTime" selected={selectedDateTime} onChange={handleDateTimeChange} required showTimeSelect
           timeFormat="hh:mm aa" timeIntervals={15} dateFormat="Pp 'hrs.'" locale="es" placeholderText="Selecciona fecha y hora"
           className="w-full" wrapperClassName="w-full" disabled={formDisabled} autoComplete="off"
-          minDate={new Date()} // Solo futuro y hoy
+          minDate={new Date()}
           showPopperArrow={true} popperPlacement="bottom-start" popperClassName="react-datepicker-popper z-50"
-          filterTime={filterTime} dayClassName={getDayClassName} injectTimes={[ /* Puedes inyectar horas específicas si es necesario */ ]}
+          filterTime={filterTime} dayClassName={getDayClassName}
         />
          {isLoadingTimes && <span className="text-xs text-amber-400 ml-2 animate-pulse">Verificando disponibilidad...</span>}
-         {!selectedDateTime && !formDisabled && !isLoadingTimes && <p className="text-xs text-text-secondary mt-1">Campo requerido.</p>}
-         {selectedDateTime && !filterTime(selectedDateTime) && !isLoadingTimes && <p className="text-xs text-red-500 mt-1">Hora no disponible.</p>}
+         {selectedDateTime && !isLoadingTimes && !filterTime(selectedDateTime) && <p className="text-xs text-red-500 mt-1">Hora no disponible para este artista.</p>}
       </div>
 
-      {/* Duración y Artista */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div>
+      {/* Duración */}
+      <div>
           <label htmlFor="duration" className="block text-sm font-medium text-text-secondary mb-1">Duración (min):</label>
           <input type="number" id="duration" value={durationMinutes} onChange={handleDurationChange} placeholder="Ej: 60" className="w-full" disabled={formDisabled} min="15" step="15" required />
-        </div>
-        <div>
-          <label htmlFor="artist" className="block text-sm font-medium text-text-secondary mb-1">Artista Asignado:</label>
-          <input type="text" id="artist" value={artist} onChange={handleArtistChange} className="w-full" disabled={formDisabled}/>
-        </div>
       </div>
 
       {/* Descripción */}
@@ -243,7 +282,7 @@ function AppointmentForm({
           />
         </div>
         <div>
-          <label htmlFor="amountPaid" className="block text-sm font-medium text-text-secondary mb-1">Monto Pagado:</label>
+          <label htmlFor="amountPaid" className="block text-sm font-medium text-text-secondary mb-1">Monto Pagado (Adelanto):</label>
           <CurrencyInput
             id="amountPaid" name="amountPaid" placeholder="$ 50.000" value={amountPaidString}
             decimalsLimit={0} prefix="$ " groupSeparator="." decimalSeparator=","
@@ -285,17 +324,16 @@ function AppointmentForm({
   );
 }
 
-// PropTypes
 AppointmentForm.propTypes = {
   initialData: PropTypes.shape({
     id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
     client_id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+    artist_id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
     appointment_time: PropTypes.string,
     duration_minutes: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
     description: PropTypes.string,
-    artist: PropTypes.string,
-    total_price: PropTypes.oneOfType([PropTypes.string, PropTypes.number]), // Acepta string o número
-    amount_paid: PropTypes.oneOfType([PropTypes.string, PropTypes.number]), // Acepta string o número
+    total_price: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+    amount_paid: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
     payment_status: PropTypes.string,
     status: PropTypes.string,
   }),
