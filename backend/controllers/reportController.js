@@ -52,55 +52,46 @@ exports.getDailyReportData = async (req, res) => {
     const startDate = startOfDay(validation.referenceDate);
     const endDate = endOfDay(validation.referenceDate);
 
-    console.log(`[getDailyReportData] Calculando para ${year}-${month}-${day}`);
-    console.log(` -> StartDate (DB): ${startDate.toISOString()}`);
-    console.log(` -> EndDate (DB):   ${endDate.toISOString()}`);
     try {
-        // 1. Detalles de Adelantos
-        console.log(" -> Querying deposit details...");
         const depositDetailsRes = await db.query(
-            `SELECT a.id, a.deposit_paid_at as income_time, a.amount_paid as income_amount, c.name as client_name, 'Adelanto Cita' as description
-             FROM appointments a JOIN clients c ON a.client_id = c.id
-             WHERE a.payment_status = 'deposit_paid' AND a.amount_paid > 0 AND a.deposit_paid_at >= $1 AND a.deposit_paid_at <= $2`,
+            `SELECT
+                 a.id, a.deposit_paid_at as income_time, a.amount_paid as income_amount,
+                 c.name as client_name, 'Adelanto Cita' as description,
+                 ar.name as artist_name
+             FROM appointments a
+             JOIN clients c ON a.client_id = c.id
+             LEFT JOIN artists ar ON a.artist_id = ar.id
+             WHERE a.payment_status = 'deposit_paid' AND a.amount_paid > 0
+             AND a.deposit_paid_at >= $1 AND a.deposit_paid_at <= $2`,
             [startDate, endDate]
         );
-        console.log(` -> Found ${depositDetailsRes.rowCount} deposit details.`);
 
-        // 2. Detalles de Citas completadas
-         console.log(" -> Querying completion details...");
          const balanceDetailsRes = await db.query(
-            `SELECT a.id, a.completed_at as income_time, COALESCE(a.total_price, 0) as income_amount, c.name as client_name, 'Cita Completada' as description
-             FROM appointments a JOIN clients c ON a.client_id = c.id
-             WHERE a.status = 'completed' AND a.completed_at >= $1 AND a.completed_at <= $2`,
+            `SELECT
+                 a.id, a.completed_at as income_time,
+                 COALESCE(a.total_price, 0) as income_amount,
+                 c.name as client_name, 'Cita Completada' as description,
+                 ar.name as artist_name
+             FROM appointments a
+             JOIN clients c ON a.client_id = c.id
+             LEFT JOIN artists ar ON a.artist_id = ar.id
+             WHERE a.status = 'completed'
+             AND a.completed_at >= $1 AND a.completed_at <= $2`,
             [startDate, endDate]
         );
-        console.log(` -> Found ${balanceDetailsRes.rowCount} completion details.`);
 
-        // Combinar y ordenar
         const incomeDetails = [...depositDetailsRes.rows, ...balanceDetailsRes.rows]
             .sort((a,b) => (a.income_time && b.income_time) ? new Date(a.income_time) - new Date(b.income_time) : 0);
-        console.log(` -> Combined Income Details: ${incomeDetails.length}`);
 
-        // Gastos
-         console.log(" -> Querying expense details...");
          const expenseRes = await db.query(
              `SELECT id, description, category, amount, expense_date as expense_time FROM expenses
               WHERE expense_date >= $1 AND expense_date <= $2 ORDER BY expense_date, created_at`,
              [startDate, endDate]
          );
-        console.log(` -> Found ${expenseRes.rowCount} expense details.`);
 
-        // Calcular totales A PARTIR DE LOS DETALLES OBTENIDOS
-         console.log(" -> Calculating totals from details...");
          const totalIncome = incomeDetails.reduce((sum, item) => sum + (Number(item.income_amount) || 0), 0);
          const totalExpenses = expenseRes.rows.reduce((sum, item) => sum + (Number(item.amount) || 0), 0);
          const profit = totalIncome - totalExpenses;
-        console.log(` -> Totals: Income=${totalIncome}, Expenses=${totalExpenses}, Profit=${profit}`);
-
-        // *** LOGGING ANTES DE ENVIAR ***
-        console.log(` -> Sending incomeDetails:`, JSON.stringify(incomeDetails, null, 2));
-        console.log(` -> Sending totals: Income=${totalIncome}, Expenses=${totalExpenses}, Profit=${profit}`);
-        // *** FIN LOGGING ***
 
         res.status(200).json({
             type: 'daily', date: formatISO(validation.referenceDate, { representation: 'date' }),
@@ -122,46 +113,46 @@ exports.getMonthlyReportData = async (req, res) => {
      const startDate = startOfMonth(validation.referenceDate);
      const endDate = endOfMonth(validation.referenceDate);
 
-     console.log(`[getMonthlyReportData] Calculando para ${year}-${month}`);
-     console.log(` -> StartDate (DB): ${startDate.toISOString()}`);
-     console.log(` -> EndDate (DB):   ${endDate.toISOString()}`);
      try {
-          // Detalles de Ingresos
-          console.log(" -> Querying deposit details...");
           const depositDetailsRes = await db.query(
-              `SELECT a.id, a.deposit_paid_at as income_time, a.amount_paid as income_amount, c.name as client_name, 'Adelanto Cita' as description FROM appointments a JOIN clients c ON a.client_id = c.id WHERE a.payment_status = 'deposit_paid' AND a.amount_paid > 0 AND a.deposit_paid_at >= $1 AND a.deposit_paid_at <= $2`,
+              `SELECT
+                   a.id, a.deposit_paid_at as income_time, a.amount_paid as income_amount,
+                   c.name as client_name, 'Adelanto Cita' as description,
+                   ar.name as artist_name
+               FROM appointments a
+               JOIN clients c ON a.client_id = c.id
+               LEFT JOIN artists ar ON a.artist_id = ar.id
+               WHERE a.payment_status = 'deposit_paid' AND a.amount_paid > 0
+               AND a.deposit_paid_at >= $1 AND a.deposit_paid_at <= $2`,
               [startDate, endDate]
           );
-           console.log(` -> Found ${depositDetailsRes.rowCount} deposit details.`);
 
-          console.log(" -> Querying completion details...");
           const balanceDetailsRes = await db.query(
-             `SELECT a.id, a.completed_at as income_time, COALESCE(a.total_price, 0) as income_amount, c.name as client_name, 'Cita Completada' as description FROM appointments a JOIN clients c ON a.client_id = c.id WHERE a.status = 'completed' AND a.completed_at >= $1 AND a.completed_at <= $2`,
+             `SELECT
+                  a.id, a.completed_at as income_time,
+                  COALESCE(a.total_price, 0) as income_amount,
+                  c.name as client_name, 'Cita Completada' as description,
+                  ar.name as artist_name
+              FROM appointments a
+              JOIN clients c ON a.client_id = c.id
+              LEFT JOIN artists ar ON a.artist_id = ar.id
+              WHERE a.status = 'completed'
+              AND a.completed_at >= $1 AND a.completed_at <= $2`,
              [startDate, endDate]
           );
-            console.log(` -> Found ${balanceDetailsRes.rowCount} completion details.`);
 
-         // Combinar y ordenar
          const incomeDetails = [...depositDetailsRes.rows, ...balanceDetailsRes.rows]
              .sort((a, b) => (a.income_time && b.income_time) ? new Date(a.income_time) - new Date(b.income_time) : 0);
-         console.log(` -> Combined Income Details: ${incomeDetails.length}`);
 
-          // Gastos
-          console.log(" -> Querying expense details...");
           const expenseRes = await db.query(
-               `SELECT id, description, category, amount, expense_date as expense_time FROM expenses WHERE expense_date >= $1 AND expense_date <= $2 ORDER BY expense_date, created_at`,
+               `SELECT id, description, category, amount, expense_date as expense_time FROM expenses
+                WHERE expense_date >= $1 AND expense_date <= $2 ORDER BY expense_date, created_at`,
                [startDate, endDate]
            );
-          console.log(` -> Found ${expenseRes.rowCount} expense details.`);
 
-          // Calcular totales A PARTIR DE LOS DETALLES OBTENIDOS
-          console.log(" -> Calculating totals from details...");
           const totalIncome = incomeDetails.reduce((sum, item) => sum + (Number(item.income_amount) || 0), 0);
           const totalExpenses = expenseRes.rows.reduce((sum, item) => sum + (Number(item.amount) || 0), 0);
           const profit = totalIncome - totalExpenses;
-          console.log(` -> Totals: Income=${totalIncome}, Expenses=${totalExpenses}, Profit=${profit}`);
-          console.log(` -> Sending incomeDetails:`, JSON.stringify(incomeDetails, null, 2));
-          console.log(` -> Sending totals: Income=${totalIncome}, Expenses=${totalExpenses}, Profit=${profit}`);
 
           res.status(200).json({
               type: 'monthly', year: year, month: month,
