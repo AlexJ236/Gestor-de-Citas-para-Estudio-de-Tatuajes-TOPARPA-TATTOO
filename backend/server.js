@@ -1,4 +1,5 @@
-require('dotenv').config();
+// backend/server.js
+require('dotenv').config(); // Carga variables de entorno desde .env para desarrollo
 const express = require('express');
 const cors = require('cors');
 
@@ -10,29 +11,38 @@ const expenseRoutes = require('./routes/expenseRoutes');
 const reportRoutes = require('./routes/reportRoutes');
 const artistRoutes = require('./routes/artistRoutes');
 
-require('./config/db'); // Configuración de la base de datos
+// Importar configuración de la base de datos (inicia la conexión)
+require('./config/db');
 
 const app = express();
+const VERCEL_FRONTEND_URL = process.env.VERCEL_FRONTEND_URL || 'http://localhost:5173';
 
-// Configuración de CORS
-const whitelist = ['http://localhost:5173', 'https://gestor-de-citas-para-estudio-de-tatuajes-toparpa-tattoo.vercel.app/']; // <-- REEMPLAZA con tu URL de Vercel
+// Lista de orígenes permitidos
+const whitelist = ['http://localhost:5173', VERCEL_FRONTEND_URL];
+
 const corsOptions = {
   origin: function (origin, callback) {
+
+    // Permitir si el origen está en la whitelist O si no hay origen (peticiones no-navegador)
     if (whitelist.indexOf(origin) !== -1 || !origin) {
-      callback(null, true)
+      callback(null, true); // Permitir
     } else {
-      callback(new Error('Not allowed by CORS'))
+      console.warn(`CORS Check - Origin '${origin}' NOT in whitelist, blocking.`); // Advertir si se bloquea
+      callback(new Error('Not allowed by CORS')); // Bloquear
     }
   },
-  methods: ['GET','POST','DELETE','PUT','OPTIONS'], // Métodos permitidos
-  allowedHeaders: ['Content-Type', 'Authorization'] // Cabeceras permitidas
+  methods: ['GET', 'POST', 'DELETE', 'PUT', 'OPTIONS'], // Métodos HTTP permitidos
+  allowedHeaders: ['Content-Type', 'Authorization'], // Cabeceras permitidas en la petición
+  credentials: true // Si necesitas manejar cookies o cabeceras de autorización complejas 
 };
-app.use(cors(corsOptions)); // Usar configuración de CORS
 
-// Middlewares
-app.use(express.json()); // Para parsear JSON bodies
+// Aplicar el middleware CORS con las opciones configuradas
+app.use(cors(corsOptions));
 
-// Rutas de la API
+// --- Otros Middlewares ---
+app.use(express.json());
+
+// --- Rutas de la API ---
 app.use('/api/auth', authRoutes);
 app.use('/api/clients', clientRoutes);
 app.use('/api/appointments', appointmentRoutes);
@@ -40,15 +50,17 @@ app.use('/api/expenses', expenseRoutes);
 app.use('/api/reports', reportRoutes);
 app.use('/api/artists', artistRoutes);
 
-// Ruta de prueba básica
+// --- Ruta de Verificación Base ---
+// Útil para verificar rápidamente si el servidor está corriendo
 app.get('/', (req, res) => {
-  res.send('¡Backend funcionando!');
+  res.send('¡Backend TOPARPA TATTOO funcionando correctamente!');
 });
 
-// Puerto
-const PORT = process.env.PORT || 5001;
+// --- Puerto de Escucha ---
+const PORT = process.env.PORT || 5001; // Usar 5001 como fallback para desarrollo local
 
-// Iniciar servidor
+// --- Iniciar el Servidor ---
 app.listen(PORT, () => {
-  console.log(`Servidor corriendo en el puerto ${PORT}`);
+  // Usar console.info o console.log para mensajes informativos
+  console.info(`Servidor corriendo en el puerto ${PORT}`);
 });
