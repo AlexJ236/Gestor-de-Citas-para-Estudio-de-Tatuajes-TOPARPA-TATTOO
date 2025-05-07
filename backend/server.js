@@ -1,5 +1,4 @@
-// backend/server.js
-require('dotenv').config(); // Carga variables de entorno desde .env para desarrollo
+require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 
@@ -61,6 +60,5 @@ const PORT = process.env.PORT || 5001; // Usar 5001 como fallback para desarroll
 
 // --- Iniciar el Servidor ---
 app.listen(PORT, () => {
-  // Usar console.info o console.log para mensajes informativos
   console.info(`Servidor corriendo en el puerto ${PORT}`);
 });
