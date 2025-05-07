@@ -1,28 +1,48 @@
 import apiClient from './api';
 import { toast } from 'react-toastify';
 
-/**
- * Obtiene la lista de todos los artistas desde el backend.
- * @returns {Promise<Array<{id: number, name: string}>>} - Array de objetos de artistas.
- */
+const handleApiError = (error, context = 'operación') => {
+  const status = error.response?.status;
+  const message = error.response?.data?.message || error.message || `Error de red al realizar la ${context}.`;
+  console.error(`Error en servicio de artistas (${context}, status ${status || 'N/A'}):`, message);
+  if (status && status !== 401 && status !== 403 && status < 500) {
+    toast.error(`Error en ${context}: ${message}`);
+  }
+  throw error;
+};
+
 export const getAllArtists = async () => {
   try {
-    // Llama a GET /api/artists (el interceptor añade el token)
     const response = await apiClient.get('/artists');
-    // Devuelve el array de artistas [{id: 1, name: 'Toparpa'}, ...]
     return response.data;
   } catch (error) {
-    const msg = error.response?.data?.message || 'Error de red';
-    // Mostrar error solo si no es un error de autenticación (manejado por interceptor)
-    if (error.response?.status !== 401 && error.response?.status !== 403) {
-        toast.error(`Error al cargar artistas: ${msg}`);
-    }
-    console.error('Error en servicio getAllArtists:', error.response?.data || error.message);
-    throw error; // Propaga el error para que el componente sepa que falló
+    return handleApiError(error, 'obtener artistas');
   }
 };
 
-// Aquí podrías añadir funciones para crear, actualizar o eliminar artistas si implementas esos endpoints
-// export const createArtist = async (artistData) => { ... };
-// export const updateArtist = async (id, artistData) => { ... };
-// export const deleteArtist = async (id) => { ... };
+export const createArtist = async (artistData) => {
+  try {
+    const response = await apiClient.post('/artists', artistData);
+    return response.data;
+  } catch (error) {
+    return handleApiError(error, 'crear artista');
+  }
+};
+
+export const updateArtist = async (id, artistData) => {
+  try {
+    const response = await apiClient.put(`/artists/${id}`, artistData);
+    return response.data;
+  } catch (error) {
+    return handleApiError(error, `actualizar artista ${id}`);
+  }
+};
+
+export const deleteArtist = async (id) => {
+  try {
+    const response = await apiClient.delete(`/artists/${id}`);
+    return response.data; // Devuelve { message: '...' }
+  } catch (error) {
+    return handleApiError(error, `eliminar artista ${id}`);
+  }
+};

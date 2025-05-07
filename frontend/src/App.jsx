@@ -15,15 +15,12 @@ import ExpensesPage from './pages/ExpensesPage';
 import ExpenseAddPage from './pages/ExpenseAddPage';
 import ExpenseEditPage from './pages/ExpenseEditPage';
 import ReportsPage from './pages/ReportsPage';
+import ArtistsManagePage from './pages/ArtistsManagePage';
 
 function App() {
   return (
     <BrowserRouter>
-      <ToastContainer
-          position="top-right" autoClose={5000} hideProgressBar={false} newestOnTop={false}
-          closeOnClick rtl={false} pauseOnFocusLoss draggable pauseOnHover
-          theme="dark"
-      />
+      <ToastContainer /* ... props ... */ />
       <Routes>
         {/* Ruta Pública */}
         <Route path="/login" element={<LoginPage />} />
@@ -31,7 +28,6 @@ function App() {
         {/* Rutas Protegidas */}
         <Route element={<ProtectedRoute />}>
           <Route path="/" element={<Layout />}>
-            {/* Dashboard */}
             <Route index element={<DashboardPage />} />
             {/* Clientes */}
             <Route path="clients" element={<ClientsListPage />} />
@@ -41,15 +37,19 @@ function App() {
             <Route path="appointments" element={<AppointmentsListPage />} />
             <Route path="appointments/new" element={<AppointmentAddPage />} />
             <Route path="appointments/edit/:id" element={<AppointmentEditPage />} />
+            {/* Gastos */}
             <Route path="expenses" element={<ExpensesPage />} />
             <Route path="expenses/new" element={<ExpenseAddPage />} />
             <Route path="expenses/edit/:id" element={<ExpenseEditPage />} />
+            {/* Reportes */}
             <Route path="reports" element={<ReportsPage />} />
+            {/* Artistas */}
+            <Route path="artists" element={<ArtistsManagePage />} />
           </Route>
         </Route>
 
         {/* Ruta 404 */}
-        <Route path="*" element={<div className='text-center py-10'><h1 className='text-4xl text-accent'>404</h1><p className='text-text-secondary'>Página No Encontrada</p></div>} />
+        <Route path="*" element={<div>404 - Página No Encontrada</div>} />
       </Routes>
     </BrowserRouter>
   );

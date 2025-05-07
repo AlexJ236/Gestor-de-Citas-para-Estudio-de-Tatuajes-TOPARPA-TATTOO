@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { Link, Outlet, useNavigate, NavLink } from 'react-router-dom';
-import { LogOut, LogIn, LayoutDashboard, Users, Calendar, Menu, X, CreditCard, FileText } from 'lucide-react';
+import { LogOut, LogIn, LayoutDashboard, Users, Calendar, Menu, X, CreditCard, FileText, Palette } from 'lucide-react';
 
 function Layout() {
   const { isAuthenticated, logout } = useAuth();
@@ -43,6 +43,10 @@ function Layout() {
                <NavLink to="/expenses" className={({ isActive }) => `${linkClassDesktop} ${isActive ? activeLinkClassDesktop : ''}`}>
                    <CreditCard size={18} className="mr-1.5" /> Gastos
                </NavLink>
+
+               <NavLink to="/artists" onClick={toggleMobileMenu} className={({ isActive }) => `${linkClassMobile} ${isActive ? activeLinkClassMobile : ''}`}>
+                  <Palette size={20} className="mr-3" /> Artistas
+              </NavLink>
 
                <NavLink to="/reports" className={({ isActive }) => `${linkClassDesktop} ${isActive ? activeLinkClassDesktop : ''}`}>
                     <FileText size={18} className="mr-1.5" /> Reportes
