@@ -1,197 +1,205 @@
-# Gestor de Citas para Estudio de Tatuajes 'TOPARPA TATTOO'
+# TOPARPA TATTOO - Studio Management System
 
-Este proyecto es una aplicación web full-stack diseñada para administrar eficientemente las operaciones de un estudio de tatuajes. Permite la gestión de clientes, citas, gastos y la generación de reportes financieros.
+This project is a full-stack web application designed to efficiently manage the operations of **TOPARPA TATTOO**, a tattoo studio located in Calama, Chile. It allows for the management of clients, appointments, expenses, and the generation of financial reports.
 
-## ✨ Características Principales
+**Find TOPARPA TATTOO on Social Media:**
+* **Instagram:** [https://www.instagram.com/toparpatattoocalama/](https://www.instagram.com/toparpatattoocalama/)
+* **Facebook:** [https://www.facebook.com/people/Toparpa-Tattoo-Calama/100086714861172/](https://www.facebook.com/people/Toparpa-Tattoo-Calama/100086714861172/)
 
-- **Autenticación de Usuarios:** Sistema de inicio de sesión seguro para proteger el acceso a la aplicación. (La funcionalidad de registro de nuevos usuarios está contemplada pero pendiente de implementación completa en el frontend).
-- **Gestión de Clientes (CRUD):**
-    - Crear, leer, actualizar y eliminar perfiles de clientes.
-    - Almacenamiento de información de contacto y notas relevantes.
-- **Gestión de Citas (CRUD):**
-    - Agendar nuevas citas asociadas a clientes.
-    - Visualización de citas en un calendario interactivo (mes y agenda).
-    - Editar detalles de citas existentes (fecha, hora, duración, artista, descripción, precio, estado de pago).
-    - Marcar citas como completadas, canceladas o no asistidas.
-    - Control de conflictos horarios al agendar o modificar citas.
-- **Gestión de Gastos (CRUD):**
-    - Registrar nuevos gastos con descripción, monto, categoría y fecha.
-    - Listar, editar y eliminar gastos existentes. (La asociación de gastos a un `user_id` específico está comentada en el código backend y podría implementarse a futuro).
-- **Dashboard Principal:**
-    - Resumen financiero del mes actual (ingresos, gastos, beneficio).
-    - Conteo de clientes totales y citas para el día actual.
-    - Listado de citas programadas para hoy.
-    - Listado de citas próximas con saldo pendiente.
-    - Accesos directos a funciones comunes.
-- **Generación de Reportes:**
-    - Generar reportes financieros detallados (diarios y mensuales).
-    - Exportar reportes como imágenes PNG.
-- **Interfaz Responsiva:** Diseño adaptable a diferentes tamaños de pantalla.
-- **Notificaciones:** Uso de toasts para feedback al usuario sobre operaciones.
+## ✨ Main Features
 
-## 💻 Tecnologías Utilizadas
+- **User Authentication:** Secure login system to protect application access. (New user registration functionality is planned but pending full frontend implementation).
+- **Client Management (CRUD):**
+    - Create, read, update, and delete client profiles.
+    - Storage of contact information and relevant notes.
+- **Appointment Management (CRUD):**
+    - Schedule new appointments associated with clients.
+    - View appointments on an interactive calendar (month and agenda views).
+    - Edit existing appointment details (date, time, duration, artist, description, price, payment status).
+    - Mark appointments as completed, canceled, or no-shows.
+    - Control scheduling conflicts when booking or modifying appointments.
+- **Expense Management (CRUD):**
+    - Register new expenses with description, amount, category, and date.
+    - List, edit, and delete existing expenses. (Associating expenses with a specific `user_id` is commented out in the backend code and could be implemented in the future).
+- **Main Dashboard:**
+    - Financial summary of the current month (income, expenses, profit).
+    - Total client count and appointments for the current day.
+    - List of appointments scheduled for today.
+    - List of upcoming appointments with outstanding balances.
+    - Shortcuts to common functions.
+- **Report Generation:**
+    - Generate detailed financial reports (daily and monthly).
+    - Export reports as PNG images.
+- **Responsive Interface:** Design adaptable to different screen sizes.
+- **Notifications:** Use of toasts for user feedback on operations.
+
+## 💻 Technologies Used
 
 ### Backend (`/backend`)
 
-- **Node.js:** Entorno de ejecución para JavaScript del lado del servidor.
-- **Express.js:** Framework web para Node.js, utilizado para construir la API REST.
-- **PostgreSQL:** Sistema de gestión de bases de datos relacional.
-- **`pg` (node-postgres):** Cliente de PostgreSQL para Node.js.
-- **`bcrypt`:** Librería para el hashing de contraseñas.
-- **`jsonwebtoken` (JWT):** Para la generación y verificación de tokens de autenticación.
-- **`cors`:** Middleware para habilitar Cross-Origin Resource Sharing.
-- **`dotenv`:** Para la gestión de variables de entorno.
-- **`date-fns`:** Librería para la manipulación avanzada de fechas y horas.
-- **`nodemon`:** Herramienta para el desarrollo que reinicia automáticamente el servidor ante cambios.
+- **Node.js:** Server-side JavaScript runtime environment.
+- **Express.js:** Web framework for Node.js, used to build the REST API.
+- **PostgreSQL:** Relational database management system.
+- **`pg` (node-postgres):** PostgreSQL client for Node.js.
+- **`bcrypt`:** Library for password hashing.
+- **`jsonwebtoken` (JWT):** For generating and verifying authentication tokens.
+- **`cors`:** Middleware to enable Cross-Origin Resource Sharing.
+- **`dotenv`:** For managing environment variables.
+- **`date-fns`:** Library for advanced date and time manipulation.
+- **`nodemon`:** Development tool that automatically restarts the server upon changes.
 
 ### Frontend (`/frontend`)
 
-- **React:** Librería para construir interfaces de usuario.
-- **Vite:** Herramienta de frontend de próxima generación para desarrollo y construcción rápidos.
-- **React Router DOM:** Para la gestión de rutas en la aplicación de una sola página (SPA).
-- **Axios:** Cliente HTTP basado en promesas para realizar peticiones a la API.
-- **Tailwind CSS:** Framework CSS de utilidad primero para un diseño rápido y personalizado.
-- **`date-fns`:** Para formateo y manipulación de fechas en el cliente.
-- **`react-big-calendar`:** Componente de calendario para mostrar y gestionar citas.
-- **`react-datepicker`:** Componente para la selección de fechas y horas.
-- **`react-toastify`:** Para mostrar notificaciones (toasts) al usuario.
-- **`react-confirm-alert`:** Para mostrar diálogos de confirmación.
-- **`lucide-react`:** Colección de iconos SVG.
-- **`html2canvas`:** Para capturar capturas de pantalla de elementos HTML (usado en reportes).
-- **`react-currency-input-field`:** Componente para inputs de moneda formateados.
-- **ESLint:** Para el análisis estático de código y mantenimiento de la calidad.
+- **React:** Library for building user interfaces.
+- **Vite:** Next-generation frontend tooling for fast development and builds.
+- **React Router DOM:** For managing routes in the single-page application (SPA).
+- **Axios:** Promise-based HTTP client for making API requests.
+- **Tailwind CSS:** Utility-first CSS framework for rapid and custom design.
+- **`date-fns`:** For date formatting and manipulation on the client-side.
+- **`react-big-calendar`:** Calendar component for displaying and managing appointments.
+- **`react-datepicker`:** Component for date and time selection.
+- **`react-toastify`:** For displaying notifications (toasts) to the user.
+- **`react-confirm-alert`:** For displaying confirmation dialogs.
+- **`lucide-react`:** Collection of SVG icons.
+- **`html2canvas`:** For capturing screenshots of HTML elements (used in reports).
+- **`react-currency-input-field`:** Component for formatted currency inputs.
+- **ESLint:** For static code analysis and maintaining code quality.
 
-## 📁 Estructura del Proyecto (Simplificada)
+## 📁 Project Structure (Simplified)
 
 /
 ├── backend/
-│   ├── controllers/      # Lógica de negocio para cada ruta
-│   ├── middleware/       # Middlewares (ej. autenticación)
-│   ├── routes/           # Definición de rutas de la API
-│   ├── config/           # Configuración (ej. conexión a BD)
-│   ├── server.js         # Punto de entrada del backend
+│   ├── controllers/      # Business logic for each route
+│   ├── middleware/       # Middlewares (e.g., authentication)
+│   ├── routes/           # API route definitions
+│   ├── config/           # Configuration (e.g., DB connection)
+│   ├── server.js         # Backend entry point
 │   └── package.json
 │
 └── frontend/
 ├── src/
-│   ├── assets/         # Recursos estáticos (imágenes, etc. - si aplica)
-│   ├── components/     # Componentes reutilizables de React
-│   ├── contexts/       # Contextos de React (ej. AuthContext)
-│   ├── pages/          # Componentes de página (vistas principales)
-│   ├── services/       # Lógica para interactuar con la API (api.js, authService.js, etc.)
-│   ├── App.jsx         # Componente raíz de la aplicación
-│   ├── main.jsx        # Punto de entrada del frontend
-│   └── index.css       # Estilos globales y Tailwind
-├── public/             # Archivos públicos (ej. index.html, favicon)
+│   ├── assets/           # Static resources (images, etc. - if applicable)
+│   ├── components/       # Reusable React components
+│   ├── contexts/         # React contexts (e.g., AuthContext)
+│   ├── pages/            # Page components (main views)
+│   ├── services/         # Logic for interacting with the API (api.js, authService.js, etc.)
+│   ├── App.jsx           # Root application component
+│   ├── main.jsx          # Frontend entry point
+│   └── index.css         # Global styles and Tailwind
+├── public/               # Public files (e.g., index.html, favicon)
 └── package.json
 
 
-## ⚙️ Pre-requisitos
+## ⚙️ Prerequisites
 
-- Node.js (se recomienda versión LTS, v18.x o superior según `package.json` del backend y frontend)
-- npm (generalmente viene con Node.js) o Yarn
-- PostgreSQL (instalado y un servidor corriendo)
+- Node.js (LTS version recommended, v18.x or higher as per backend and frontend `package.json`)
+- npm (usually comes with Node.js) or Yarn
+- PostgreSQL (installed and a server running)
 
-## 🚀 Instalación y Configuración
+## 🚀 Installation and Setup
 
-Sigue estos pasos para poner en marcha el proyecto en tu entorno local:
+Follow these steps to get the project running in your local environment:
 
-### 1. Clonar el Repositorio
+### 1. Clone the Repository
 
-git clone [https://github.com/AlexJ236/Gestor-de-Citas-para-Estudio-de-Tatuajes-TOPARPA-TATTOO.git](https://github.com/AlexJ236/Gestor-de-Citas-para-Estudio-de-Tatuajes-TOPARPA-TATTOO.git)
-cd TOPARPA GESTION
+bash
+git clone [https://github.com/AlexJ236/Gestor-de-Citas-para-Estudio-de-Tatuajes-TOPARPA-TATTOO.git](https://github.com/AlexJ236/Gestor-de-Citas-para-Estudio-de-Tatuajes-TOPARPA-TATTOO.git) TOPARPA_GESTION
+cd TOPARPA_GESTION
 
-### 2. Configuración del Backend
+(Note: The repository will be cloned into a folder named TOPARPA_GESTION in the command above, then you cd into it. Adjust if you prefer a different local folder name.)
 
+2. Backend Configuration
+
+Bash
 cd backend
 npm install
 
-### Crea un archivo .env en la raíz de la carpeta /backend y configura las siguientes variables de entorno:
+Create a .env file in the root of the /backend folder and configure the following environment variables:
 
-DB_USER=tu_usuario_postgres
+Fragmento de código
+
+DB_USER=your_postgres_user
 DB_HOST=localhost
 DB_DATABASE=toparpa_tattoo_db
-DB_PASSWORD=tu_contraseña_postgres
+DB_PASSWORD=your_postgres_password
 DB_PORT=5432
-JWT_SECRET=un_secreto_muy_largo_y_dificil_de_adivinar_para_jwt # ¡CAMBIA ESTO!
+JWT_SECRET=a_very_long_and_hard_to_guess_secret_for_jwt # CHANGE THIS!
 PORT=5001
+Database Configuration:
+Ensure your PostgreSQL server is running.
 
-### Configuración de la Base de Datos:
+Create a database with the name you specified in DB_DATABASE (e.g., toparpa_tattoo_db).
 
-Asegúrate de que tu servidor PostgreSQL esté corriendo.
+IMPORTANT: Execute the provided SQL script (or one you have created) to define the table structure in your database. This script should include:
 
-Crea una base de datos con el nombre que especificaste en DB_DATABASE (ej. toparpa_tattoo_db).
+users: id (SERIAL PRIMARY KEY), username (VARCHAR UNIQUE NOT NULL), password_hash (VARCHAR NOT NULL), created_at (TIMESTAMP DEFAULT CURRENT_TIMESTAMP).
+clients: id (SERIAL PRIMARY KEY), name (VARCHAR NOT NULL), phone (VARCHAR), email (VARCHAR UNIQUE), notes (TEXT), created_at (TIMESTAMP DEFAULT CURRENT_TIMESTAMP), updated_at (TIMESTAMP DEFAULT CURRENT_TIMESTAMP).
+appointments: id (SERIAL PRIMARY KEY), client_id (INTEGER REFERENCES clients(id) ON DELETE CASCADE), user_id (INTEGER REFERENCES users(id)), appointment_time (TIMESTAMP WITH TIME ZONE NOT NULL), duration_minutes (INTEGER DEFAULT 60), description (TEXT), artist (VARCHAR), total_price (NUMERIC(10,0)), amount_paid (NUMERIC(10,0) DEFAULT 0), payment_status (VARCHAR(20) DEFAULT 'pending'), status (VARCHAR(20) DEFAULT 'scheduled'), deposit_paid_at (TIMESTAMP WITH TIME ZONE), completed_at (TIMESTAMP WITH TIME ZONE), created_at (TIMESTAMP DEFAULT CURRENT_TIMESTAMP). (Consider adding updated_at to appointments as well if you haven't already).
+expenses: id (SERIAL PRIMARY KEY), description (VARCHAR NOT NULL), amount (NUMERIC(10,0) NOT NULL), category (VARCHAR), expense_date (DATE NOT NULL), user_id (INTEGER REFERENCES users(id) NULL), created_at (TIMESTAMP DEFAULT CURRENT_TIMESTAMP), updated_at (TIMESTAMP DEFAULT CURRENT_TIMESTAMP). (The user_id column in expenses is optional and not currently actively used in the backend's creation logic).
+Example of how to run an SQL script with psql (replace placeholders):
 
-IMPORTANTE: Ejecuta el script SQL proporcionado (o que hayas creado) para definir la estructura de las tablas en tu base de datos. Este script debe incluir:
+Bash
+psql -U your_postgres_user -d toparpa_tattoo_db -f path/to/your/tables_script.sql
 
-- users: id (SERIAL PRIMARY KEY), username (VARCHAR UNIQUE NOT NULL), password_hash (VARCHAR NOT NULL), created_at (TIMESTAMP DEFAULT CURRENT_TIMESTAMP).
-- clients: id (SERIAL PRIMARY KEY), name (VARCHAR NOT NULL), phone (VARCHAR), email (VARCHAR UNIQUE), notes (TEXT), created_at (TIMESTAMP DEFAULT CURRENT_TIMESTAMP), updated_at (TIMESTAMP DEFAULT CURRENT_TIMESTAMP).
-- appointments: id (SERIAL PRIMARY KEY), client_id (INTEGER REFERENCES clients(id) ON DELETE CASCADE), user_id (INTEGER REFERENCES users(id)), appointment_time (TIMESTAMP WITH TIME ZONE NOT NULL), duration_minutes (INTEGER DEFAULT 60), description (TEXT), artist (VARCHAR), total_price (NUMERIC(10,0)), amount_paid (NUMERIC(10,0) DEFAULT 0), payment_status (VARCHAR(20) DEFAULT 'pending'), status (VARCHAR(20) DEFAULT 'scheduled'), deposit_paid_at (TIMESTAMP WITH TIME ZONE), completed_at (TIMESTAMP WITH TIME ZONE), created_at (TIMESTAMP DEFAULT CURRENT_TIMESTAMP). (Considera añadir updated_at también a appointments si aún no lo has hecho).
-- expenses: id (SERIAL PRIMARY KEY), description (VARCHAR NOT NULL), amount (NUMERIC(10,0) NOT NULL), category (VARCHAR), expense_date (DATE NOT NULL), user_id (INTEGER REFERENCES users(id) NULL), created_at (TIMESTAMP DEFAULT CURRENT_TIMESTAMP), updated_at (TIMESTAMP DEFAULT CURRENT_TIMESTAMP). (La columna user_id en expenses es opcional y actualmente no se está utilizando activamente en la lógica de creación del backend).
+3. Frontend Configuration
 
-### Ejemplo de cómo ejecutar un script SQL con psql (reemplaza los placeholders):
-
-psql -U tu_usuario_postgres -d toparpa_tattoo_db -f ruta/a/tu/script_tablas.sql
-
-### 3. Configuración del Frontend
-
+Bash
 cd ../frontend
 npm install
 
-El frontend está configurado para conectarse al backend en http://localhost:5001/api. Si necesitas cambiar esto, modifica el archivo frontend/src/services/api.js.
+The frontend is configured to connect to the backend at http://localhost:5001/api. If you need to change this, modify the frontend/src/services/api.js file.
 
-### ධ Scripts Disponibles
+ධ Available Scripts
+From the /backend folder:
 
-- Desde la carpeta /backend:
-npm start: Inicia el servidor de backend en modo producción.
-npm run dev: Inicia el servidor de backend en modo desarrollo con nodemon (reinicia automáticamente con los cambios).
+npm start: Starts the backend server in production mode.
+npm run dev: Starts the backend server in development mode with nodemon (auto-restarts on changes).
+From the /frontend folder:
 
-- Desde la carpeta /frontend:
-npm run dev: Inicia el servidor de desarrollo del frontend (generalmente en http://localhost:5173).
-npm run build: Compila la aplicación de frontend para producción (en la carpeta /frontend/dist).
-npm run lint: Ejecuta ESLint para analizar el código del frontend.
-npm run preview: Sirve la build de producción localmente para previsualización.
+npm run dev: Starts the frontend development server (usually at http://localhost:5173).
+npm run build: Compiles the frontend application for production (in the /frontend/dist folder).
+npm run lint: Runs ESLint to analyze the frontend code.
+npm run preview: Serves the production build locally for preview.
+🔑 Authentication
+Authentication is handled using JSON Web Tokens (JWT).
+Upon login, the backend generates a token that the frontend stores in sessionStorage.
+All subsequent requests to protected API routes from the frontend include this token in the Authorization header as a Bearer token.
+The backend verifies this token to authorize access.
+The new user registration functionality (POST /api/auth/register) is implemented in the backend (authController.js), but the frontend call (authService.js) is marked as TODO, and there is currently no user interface for it.
 
-### 🔑 Autenticación
+📄 API Endpoints (Summary)
+All endpoints are prefixed with /api. Routes managing client, appointment, and expense data require authentication.
 
-La autenticación se maneja mediante JSON Web Tokens (JWT).
-Al iniciar sesión, el backend genera un token que el frontend almacena en sessionStorage.
-Todas las peticiones subsecuentes a rutas protegidas de la API desde el frontend incluyen este token en la cabecera Authorization como un Bearer token.
-El backend verifica este token para autorizar el acceso.
-La funcionalidad de registro de nuevos usuarios (POST /api/auth/register) está implementada en el backend (authController.js), pero la llamada desde el frontend (authService.js) está marcada como TODO y no hay una interfaz de usuario para ello actualmente.
+Authentication (/auth):
 
-### 📄 Endpoints de la API (Resumen)
+POST /login: Log in.
+POST /register: Register a new user.
+Clients (/clients):
 
-Todos los endpoints están prefijados con /api. Las rutas que gestionan datos de clientes, citas y gastos requieren autenticación.
+GET /: Get all clients.
+POST /: Create a new client.
+GET /:id: Get a client by ID.
+PUT /:id: Update a client.
+DELETE /:id: Delete a client.
+Appointments (/appointments):
 
-Autenticación (/auth):
-POST /login: Iniciar sesión.
-POST /register: Registrar un nuevo usuario.
-Clientes (/clients):
-GET /: Obtener todos los clientes.
-POST /: Crear un nuevo cliente.
-GET /:id: Obtener un cliente por ID.
-PUT /:id: Actualizar un cliente.
-DELETE /:id: Eliminar un cliente.
-Citas (/appointments):
-GET /: Obtener todas las citas.
-POST /: Crear una nueva cita.
-GET /:id: Obtener una cita por ID.
-PUT /:id: Actualizar una cita.
-DELETE /:id: Eliminar una cita.
-Gastos (/expenses):
-GET /: Obtener todos los gastos (acepta query params startDate, endDate).
-POST /: Crear un nuevo gasto.
-GET /:id: Obtener un gasto por ID.
-PUT /:id: Actualizar un gasto.
-DELETE /:id: Eliminar un gasto.
-Reportes (/reports):
-GET /summary: Obtener resumen financiero (query params year, month).
-GET /daily: Obtener datos para reporte diario (query params year, month, day).
-GET /monthly: Obtener datos para reporte mensual (query params year, month).
+GET /: Get all appointments.
+POST /: Create a new appointment.
+GET /:id: Get an appointment by ID.
+PUT /:id: Update an appointment.
+DELETE /:id: Delete an appointment.
+Expenses (/expenses):
 
-### 📝 Licencia
+GET /: Get all expenses (accepts startDate, endDate query params).
+POST /: Create a new expense.
+GET /:id: Get an expense by ID.
+PUT /:id: Update an expense.
+DELETE /:id: Delete an expense.
+Reports (/reports):
 
-Este proyecto se distribuye bajo la Licencia ISC. Puedes encontrar los detalles de la licencia en los archivos package.json de cada subdirectorio (frontend y backend) o añadir un archivo LICENSE en la raíz del proyecto con el texto completo de la licencia.
--------------------------------------------------------------------------------------------------------------------------------------
-¡Hecho por AlexJ236!
+GET /summary: Get financial summary (query params year, month).
+GET /daily: Get data for daily report (query params year, month, day).
+GET /monthly: Get data for monthly report (query params year, month).
+📝 License
+This project is distributed under the ISC License.
+Made by AlexJ236!
