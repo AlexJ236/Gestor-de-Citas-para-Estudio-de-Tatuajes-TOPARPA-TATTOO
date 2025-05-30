@@ -3,8 +3,8 @@
 This project is a full-stack web application designed to efficiently manage the operations of **TOPARPA TATTOO**, a tattoo studio located in Calama, Chile. It allows for the management of clients, appointments, expenses, and the generation of financial reports.
 
 **Find TOPARPA TATTOO on Social Media:**
-* **Instagram:** [https://www.instagram.com/toparpatattoocalama/](https://www.instagram.com/toparpatattoocalama/)
-* **Facebook:** [https://www.facebook.com/people/Toparpa-Tattoo-Calama/100086714861172/](https://www.facebook.com/people/Toparpa-Tattoo-Calama/100086714861172/)
+* **Instagram:** https://www.instagram.com/toparpatattoocalama/
+* **Facebook:** https://www.facebook.com/people/Toparpa-Tattoo-Calama/100086714861172/
 
 ## ✨ Main Features
 
@@ -67,6 +67,7 @@ This project is a full-stack web application designed to efficiently manage the 
 
 ## 📁 Project Structure (Simplified)
 
+```text
 /
 ├── backend/
 │   ├── controllers/      # Business logic for each route
@@ -77,47 +78,44 @@ This project is a full-stack web application designed to efficiently manage the 
 │   └── package.json
 │
 └── frontend/
-├── src/
-│   ├── assets/           # Static resources (images, etc. - if applicable)
-│   ├── components/       # Reusable React components
-│   ├── contexts/         # React contexts (e.g., AuthContext)
-│   ├── pages/            # Page components (main views)
-│   ├── services/         # Logic for interacting with the API (api.js, authService.js, etc.)
-│   ├── App.jsx           # Root application component
-│   ├── main.jsx          # Frontend entry point
-│   └── index.css         # Global styles and Tailwind
-├── public/               # Public files (e.g., index.html, favicon)
-└── package.json
+    ├── src/
+    │   ├── assets/           # Static resources (images, etc. - if applicable)
+    │   ├── components/       # Reusable React components
+    │   ├── contexts/         # React contexts (e.g., AuthContext)
+    │   ├── pages/            # Page components (main views)
+    │   ├── services/         # Logic for interacting with the API (api.js, authService.js, etc.)
+    │   ├── App.jsx           # Root application component
+    │   ├── main.jsx          # Frontend entry point
+    │   └── index.css         # Global styles and Tailwind
+    ├── public/               # Public files (e.g., index.html, favicon)
+    └── package.json
+```
 
-
-## ⚙️ Prerequisites
-
-- Node.js (LTS version recommended, v18.x or higher as per backend and frontend `package.json`)
-- npm (usually comes with Node.js) or Yarn
-- PostgreSQL (installed and a server running)
-
-## 🚀 Installation and Setup
-
+⚙️ Prerequisites
+Node.js (LTS version recommended, v18.x or higher as per backend and frontend package.json)
+npm (usually comes with Node.js) or Yarn
+PostgreSQL (installed and a server running)
+🚀 Installation and Setup
 Follow these steps to get the project running in your local environment:
 
-### 1. Clone the Repository
+1. Clone the Repository
+```Bash
 
-bash
-git clone [https://github.com/AlexJ236/Gestor-de-Citas-para-Estudio-de-Tatuajes-TOPARPA-TATTOO.git](https://github.com/AlexJ236/Gestor-de-Citas-para-Estudio-de-Tatuajes-TOPARPA-TATTOO.git) TOPARPA_GESTION
+git clone [https://github.com/AlexJ236/Gestor-de-Citas-para-Estudio-de-Tatuajes-TOPARPA-TATTOO.git](https://github.com/AlexJ236/Gestor-de-Citas-para-Estudio-de-Tatuajes-TOPARPA-TATTOO.git)
 cd TOPARPA_GESTION
-
+```
 (Note: The repository will be cloned into a folder named TOPARPA_GESTION in the command above, then you cd into it. Adjust if you prefer a different local folder name.)
 
 2. Backend Configuration
+```Bash
 
-Bash
 cd backend
 npm install
+```
 
 Create a .env file in the root of the /backend folder and configure the following environment variables:
 
-Fragmento de código
-
+```
 DB_USER=your_postgres_user
 DB_HOST=localhost
 DB_DATABASE=toparpa_tattoo_db
@@ -125,27 +123,71 @@ DB_PASSWORD=your_postgres_password
 DB_PORT=5432
 JWT_SECRET=a_very_long_and_hard_to_guess_secret_for_jwt # CHANGE THIS!
 PORT=5001
+```
 Database Configuration:
+
 Ensure your PostgreSQL server is running.
 
 Create a database with the name you specified in DB_DATABASE (e.g., toparpa_tattoo_db).
 
 IMPORTANT: Execute the provided SQL script (or one you have created) to define the table structure in your database. This script should include:
 
-users: id (SERIAL PRIMARY KEY), username (VARCHAR UNIQUE NOT NULL), password_hash (VARCHAR NOT NULL), created_at (TIMESTAMP DEFAULT CURRENT_TIMESTAMP).
-clients: id (SERIAL PRIMARY KEY), name (VARCHAR NOT NULL), phone (VARCHAR), email (VARCHAR UNIQUE), notes (TEXT), created_at (TIMESTAMP DEFAULT CURRENT_TIMESTAMP), updated_at (TIMESTAMP DEFAULT CURRENT_TIMESTAMP).
-appointments: id (SERIAL PRIMARY KEY), client_id (INTEGER REFERENCES clients(id) ON DELETE CASCADE), user_id (INTEGER REFERENCES users(id)), appointment_time (TIMESTAMP WITH TIME ZONE NOT NULL), duration_minutes (INTEGER DEFAULT 60), description (TEXT), artist (VARCHAR), total_price (NUMERIC(10,0)), amount_paid (NUMERIC(10,0) DEFAULT 0), payment_status (VARCHAR(20) DEFAULT 'pending'), status (VARCHAR(20) DEFAULT 'scheduled'), deposit_paid_at (TIMESTAMP WITH TIME ZONE), completed_at (TIMESTAMP WITH TIME ZONE), created_at (TIMESTAMP DEFAULT CURRENT_TIMESTAMP). (Consider adding updated_at to appointments as well if you haven't already).
-expenses: id (SERIAL PRIMARY KEY), description (VARCHAR NOT NULL), amount (NUMERIC(10,0) NOT NULL), category (VARCHAR), expense_date (DATE NOT NULL), user_id (INTEGER REFERENCES users(id) NULL), created_at (TIMESTAMP DEFAULT CURRENT_TIMESTAMP), updated_at (TIMESTAMP DEFAULT CURRENT_TIMESTAMP). (The user_id column in expenses is optional and not currently actively used in the backend's creation logic).
+```Plaintext
+
+- users: 
+  - id (SERIAL PRIMARY KEY)
+  - username (VARCHAR UNIQUE NOT NULL)
+  - password_hash (VARCHAR NOT NULL)
+  - created_at (TIMESTAMP DEFAULT CURRENT_TIMESTAMP)
+- clients: 
+  - id (SERIAL PRIMARY KEY)
+  - name (VARCHAR NOT NULL)
+  - phone (VARCHAR)
+  - email (VARCHAR UNIQUE)
+  - notes (TEXT)
+  - created_at (TIMESTAMP DEFAULT CURRENT_TIMESTAMP)
+  - updated_at (TIMESTAMP DEFAULT CURRENT_TIMESTAMP)
+- appointments: 
+  - id (SERIAL PRIMARY KEY)
+  - client_id (INTEGER REFERENCES clients(id) ON DELETE CASCADE)
+  - user_id (INTEGER REFERENCES users(id))
+  - appointment_time (TIMESTAMP WITH TIME ZONE NOT NULL)
+  - duration_minutes (INTEGER DEFAULT 60)
+  - description (TEXT)
+  - artist (VARCHAR)
+  - total_price (NUMERIC(10,0))
+  - amount_paid (NUMERIC(10,0) DEFAULT 0)
+  - payment_status (VARCHAR(20) DEFAULT 'pending')
+  - status (VARCHAR(20) DEFAULT 'scheduled')
+  - deposit_paid_at (TIMESTAMP WITH TIME ZONE)
+  - completed_at (TIMESTAMP WITH TIME ZONE)
+  - created_at (TIMESTAMP DEFAULT CURRENT_TIMESTAMP)
+  - (Consider adding updated_at to appointments as well if you haven't already).
+- expenses: 
+  - id (SERIAL PRIMARY KEY)
+  - description (VARCHAR NOT NULL)
+  - amount (NUMERIC(10,0) NOT NULL)
+  - category (VARCHAR)
+  - expense_date (DATE NOT NULL)
+  - user_id (INTEGER REFERENCES users(id) NULL)
+  - created_at (TIMESTAMP DEFAULT CURRENT_TIMESTAMP)
+  - updated_at (TIMESTAMP DEFAULT CURRENT_TIMESTAMP)
+  - (The user_id column in expenses is optional and not currently actively used in the backend's creation logic).
+```
+
 Example of how to run an SQL script with psql (replace placeholders):
 
-Bash
+```Bash
+
 psql -U your_postgres_user -d toparpa_tattoo_db -f path/to/your/tables_script.sql
+```
 
 3. Frontend Configuration
+```Bash
 
-Bash
 cd ../frontend
 npm install
+```
 
 The frontend is configured to connect to the backend at http://localhost:5001/api. If you need to change this, modify the frontend/src/services/api.js file.
 
@@ -154,8 +196,8 @@ From the /backend folder:
 
 npm start: Starts the backend server in production mode.
 npm run dev: Starts the backend server in development mode with nodemon (auto-restarts on changes).
-
 From the /frontend folder:
+
 npm run dev: Starts the frontend development server (usually at http://localhost:5173).
 npm run build: Compiles the frontend application for production (in the /frontend/dist folder).
 npm run lint: Runs ESLint to analyze the frontend code.
@@ -204,4 +246,5 @@ GET /monthly: Get data for monthly report (query params year, month).
 
 📝 License
 This project is distributed under the ISC License.
+
 Made by AlexJ236!
