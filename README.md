@@ -154,12 +154,13 @@ From the /backend folder:
 
 npm start: Starts the backend server in production mode.
 npm run dev: Starts the backend server in development mode with nodemon (auto-restarts on changes).
-From the /frontend folder:
 
+From the /frontend folder:
 npm run dev: Starts the frontend development server (usually at http://localhost:5173).
 npm run build: Compiles the frontend application for production (in the /frontend/dist folder).
 npm run lint: Runs ESLint to analyze the frontend code.
 npm run preview: Serves the production build locally for preview.
+
 🔑 Authentication
 Authentication is handled using JSON Web Tokens (JWT).
 Upon login, the backend generates a token that the frontend stores in sessionStorage.
@@ -200,6 +201,7 @@ Reports (/reports):
 GET /summary: Get financial summary (query params year, month).
 GET /daily: Get data for daily report (query params year, month, day).
 GET /monthly: Get data for monthly report (query params year, month).
+
 📝 License
 This project is distributed under the ISC License.
 Made by AlexJ236!
